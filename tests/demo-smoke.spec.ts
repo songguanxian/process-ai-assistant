@@ -420,6 +420,15 @@ test("人机回路卡片使用统一三按钮动作", async ({ page }) => {
   await expect(fallbackCard.getByRole("button", { name: "手动修改" })).toBeVisible();
   await expect(fallbackCard.getByRole("button", { name: "人工填报" })).toBeVisible();
   await expect(fallbackCard.getByRole("button", { name: "确认提交" })).toBeVisible();
+  await fallbackCard.getByRole("button", { name: "手动修改" }).click();
+  await expect(page.getByText("固定确认页")).toHaveCount(0);
+  await expect(fallbackCard.getByLabel("触发原因")).toHaveCount(0);
+  await expect(fallbackCard.getByLabel("AI 原值")).toHaveValue("K10+887 或 K10+887-K20+303.368");
+  await expect(fallbackCard.getByLabel("候选结构")).toHaveValue("路基工程 / 桥梁工程");
+  await fallbackCard.getByLabel("AI 原值").fill("K10+887 路基工程");
+  await fallbackCard.getByLabel("候选结构").fill("路基工程");
+  await expect(fallbackCard.getByLabel("AI 原值")).toHaveValue("K10+887 路基工程");
+  await expect(fallbackCard.getByLabel("候选结构")).toHaveValue("路基工程");
 });
 
 test("App 端业务功能复用 Web 对话与输入框", async ({ page }) => {

@@ -2052,20 +2052,70 @@ function FallbackCard({
   onOpenPanel: (panel: DetailPanel, event: string) => void;
   onFallback: () => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [fields, setFields] = useState([
+    {
+      label: "触发原因",
+      value: "字段缺失 / 多候选 / 低置信",
+      source: "规则拦截",
+      editable: false
+    },
+    {
+      label: "AI 原值",
+      value: "K10+887 或 K10+887-K20+303.368",
+      source: "用户输入",
+      editable: true,
+      multiline: true
+    },
+    {
+      label: "候选结构",
+      value: "路基工程 / 桥梁工程",
+      source: "结构库",
+      editable: true
+    },
+    {
+      label: "人工状态",
+      value: "待人工确认",
+      source: "任务节点",
+      editable: true
+    }
+  ]);
+  const updateField = (label: string, value: string) => {
+    setFields((current) => current.map((field) => (field.label === label ? { ...field, value } : field)));
+  };
+
   return (
     <div className="result-card warning">
       <h3>意图不明确</h3>
       <p>输入意图含糊且工程检查字段存在多候选，AI 不能自动写入业务结果。请你重新输入明确的任务指示或者进行人工填报。</p>
-      <FieldGrid
-        rows={[
-          ["触发原因", "字段缺失 / 多候选 / 低置信", "规则拦截"],
-          ["AI 原值", "K10+887 或 K10+887-K20+303.368", "用户输入"],
-          ["候选结构", "路基工程 / 桥梁工程", "结构库"],
-          ["人工状态", "待人工确认", "任务节点"]
-        ]}
-      />
+      <div className={isEditing ? "field-grid editable-fields fallback-edit-grid" : "field-grid fallback-edit-grid"}>
+        {fields.map((field) => (
+          <div className="field-row" key={field.label}>
+            <span>{field.label}</span>
+            {isEditing && field.editable ? (
+              field.multiline ? (
+                <textarea
+                  aria-label={field.label}
+                  value={field.value}
+                  rows={2}
+                  onChange={(event) => updateField(field.label, event.target.value)}
+                />
+              ) : (
+                <input
+                  aria-label={field.label}
+                  value={field.value}
+                  onChange={(event) => updateField(field.label, event.target.value)}
+                />
+              )
+            ) : (
+              <strong>{field.value}</strong>
+            )}
+            <small>{field.source}</small>
+          </div>
+        ))}
+      </div>
       <div className="card-actions">
-        <button onClick={() => onOpenPanel("confirm", "手动修改字段并记录修改原因")}>手动修改</button>
+        <button onClick={() => setIsEditing(true)}>手动修改</button>
         <button onClick={onFallback}>人工填报</button>
         <button className="primary-button" onClick={() => onOpenPanel("confirm", "人机回路确认提交")}>
           确认提交
